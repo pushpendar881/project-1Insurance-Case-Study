@@ -80,3 +80,35 @@ accuracy_random_forest = accuracy_score(y_test, y_pred_random_forest)
 conf_matrix_random_forest = confusion_matrix(y_test, y_pred_random_forest)
 print(" Random Forest:",accuracy_random_forest)
 print(" Random Forest:",conf_matrix_random_forest)
+
+print("france:",log_reg.predict([[1,0,0,40,0]]))
+print("spain: ",log_reg.predict([[0,1,0,40,0]]))
+print("germany: ",log_reg.predict([[0,0,1,40,0]]))
+
+print("france:",log_reg.predict([[1,0,0,30,87000]]))
+print("spain: ",log_reg.predict([[0,1,0,30,87000]]))
+print("germany: ",log_reg.predict([[0,0,1,30,87000]]))
+
+print("france:",log_reg.predict([[1,0,0,40,100000]]))
+print("spain: ",log_reg.predict([[0,1,0,40,100000]]))
+print("germany: ",log_reg.predict([[0,0,1,40,100000]]))
+
+print("france:",log_reg.predict([[1,0,0,50,0]]))
+print("spain: ",log_reg.predict([[0,1,0,50,0]]))
+print("germany: ",log_reg.predict([[0,0,1,50,0]]))
+
+print("france:",log_reg.predict([[1,0,0,18,0]]))
+print("spain: ",log_reg.predict([[0,1,0,18,0]]))
+print("germany: ",log_reg.predict([[0,0,1,18,0]]))
+
+print("france:",log_reg.predict([[1,0,0,22,600000]]))
+print("spain: ",log_reg.predict([[0,1,0,22,600000]]))
+print("germany: ",log_reg.predict([[0,0,1,22,600000]]))
+
+print("france:",log_reg.predict([[1,0,0,35,2500000]]))
+print("spain: ",log_reg.predict([[0,1,0,35,2500000]]))
+print("germany: ",log_reg.predict([[0,0,1,35,2500000]]))
+
+print("france:",log_reg.predict([[1,0,0,60,1000000000]]))
+print("spain: ",log_reg.predict([[0,1,0,60,1000000000]]))
+print("germany: ",log_reg.predict([[0,0,1,60,1000000000]]))
