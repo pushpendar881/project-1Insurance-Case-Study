@@ -1,190 +1,184 @@
 import os
-INPUT_DATSET='datasets/original'
-BASE_PATH='datasets/idc'
-TRAIN_PATH=os.path.sep.join([BASE_PATH,'training'])
-VAL_PATH=os.path.sep.join([BASE_PATH,'validation'])
-TEST_PATH=os.path.sep.join([BASE_PATH,'testing'])
-TRAIN_SPLIT=0.8
-VAL_SPLIT=0.1
-
 from imutils import paths
-import random ,shutil,os
-originalpaths=list(paths.list_images(INPUT_DATASET))
-random.speed(7)
+import random
+import shutil
+import tensorflow as tf
+from keras.preprocessing.image import ImageDataGenerator
+from keras import backend as K
+import matplotlib
+from keras.utils import np_utils
+from sklearn.metrics import classification_report, confusion_matrix
+from imutils import paths
+import matplotlib.pyplot as plt
+import numpy as np
+
+INPUT_DATASET = 'datasets/original'
+BASE_PATH = 'datasets/idc'
+TRAIN_PATH = os.path.sep.join([BASE_PATH, 'training'])
+VAL_PATH = os.path.sep.join([BASE_PATH, 'validation'])
+TEST_PATH = os.path.sep.join([BASE_PATH, 'testing'])
+TRAIN_SPLIT = 0.8
+VAL_SPLIT = 0.1
+
+originalpaths = list(paths.list_images(INPUT_DATASET))
+random.seed(7)
 random.shuffle(originalpaths)
-index=int(len(originalpaths)*TRAIN_SPLIT)
-trainpaths=originalpaths[:index]
-testpaths=originalpaths[index:]
-index=int(len(trainpaths)*VAL_SPLIT)
-valpaths=trainpaths[:index]
-trainpaths=trainpaths[index:]
-dataset=[("training",trainpaths,TRAIN_PATH),
-          ("validation",valpaths,VAL_PATH),
-          ("testing",testpaths,TEST_PATH)
-]
-for (setType , originalpaths ,basepath)in datasets:
+index = int(len(originalpaths) * TRAIN_SPLIT)
+trainpaths = originalpaths[:index]
+testpaths = originalpaths[index:]
+index = int(len(trainpaths) * VAL_SPLIT)
+valpaths = trainpaths[:index]
+trainpaths = trainpaths[index:]
+datasets = [("training", trainpaths, TRAIN_PATH),
+            ("validation", valpaths, VAL_PATH),
+            ("testing", testpaths, TEST_PATH)]
+
+for (setType, originalpaths, basepath) in datasets:
     print(f'building {setType} set')
     if not os.path.exists(basepath):
         print(f'building directory {basepath}')
         os.makedirs(basepath)
     for path in originalpaths:
-        file=path.split(os.path.sep)[-1]
-        label=file[-5:-4]
-        labelPath=os.path.sep.join([basePath, label])
+        file = path.split(os.path.sep)[-1]
+        label = file[-5:-4]
+        labelPath = os.path.sep.join([basepath, label])
         if not os.path.exists(labelPath):
-                print(f'Building directory {labelPath}')
-                os.makedirs (labelPath)
+            print(f'Building directory {labelPath}')
+            os.makedirs(labelPath)
 
-        newPath=os.path.sep.join([labelPath, file])
+        newPath = os.path.sep.join([labelPath, file])
         shutil.copy2(path, newPath)
-        
 
-import tensorflow as tf
-from keras.preprocessing.image import ImageDataGenerator
-from keras import backend as K
 
 class CancerNet:
+    @staticmethod
     def build(width, height, depth, classes):
-        models tf.keras.models. Sequential()
-        shape=(height, width, depth)
-        channelDim=-1
-        if K.image data_format()=="channels_first":
-             shape=(depth, height, width)
-                channelDim=1
+        model = tf.keras.models.Sequential()
+        shape = (height, width, depth)
+        channelDim = -1
+        if K.image_data_format() == "channels_first":
+            shape = (depth, height, width)
+            channelDim = 1
 
-
-        model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, activations='relu', input_shape=shape))
-        model.add(tf.keras.layers.BatchNormalization(axis channelDim))
-        model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2))
-        model.add(tf.keras.layers. Dropout (0.25))
-         
-      
-        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
-        model.add(tf.keras.layers.Conv2D(filters= 64, kernel_size=3, activation='relu'))
+        model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, activation='relu', input_shape=shape))
         model.add(tf.keras.layers.BatchNormalization(axis=channelDim))
-        model.add(tf.keras.layers.Conv2D(filters=64,  kernel_size=3, activation='relu'))
-        model.add(tf.keras.layers. BatchfNormalization(axis=channelDim))
-        model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2)) 
-        model.add(tf.keras. layers. Dropout (0.25))
-        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
-        model.add(tf.keras.layers. BatchNormalization(axis=channelDim))
-        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activations='relu'))
-        model.add(tf.keras.layers. BatchNormalization(axis=channelDim))
-        model.add(tf.keras.layers. Conv2D(filters=64, kernel_size=3, activation='relu'))
-        model.add(tf.keras.layers.BatchNormalization(axis=channelDim)) 
         model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2))
-        model.add(tf.keras.layers.Droupout(0.25))
-        
+        model.add(tf.keras.layers.Dropout(0.25))
+
+        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
+        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
+        model.add(tf.keras.layers.BatchNormalization(axis=channelDim))
+        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
+        model.add(tf.keras.layers.BatchNormalization(axis=channelDim))
+        model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2))
+        model.add(tf.keras.layers.Dropout(0.25))
+        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
+        model.add(tf.keras.layers.BatchNormalization(axis=channelDim))
+        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
+        model.add(tf.keras.layers.BatchNormalization(axis=channelDim))
+        model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=3, activation='relu'))
+        model.add(tf.keras.layers.BatchNormalization(axis=channelDim))
+        model.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2))
+        model.add(tf.keras.layers.Dropout(0.25))
 
         model.add(tf.keras.layers.Flatten())
-        model.add(tf.keras.layers. Dense (units=256, activation='relu'))
+        model.add(tf.keras.layers.Dense(units=256, activation='relu'))
         model.add(tf.keras.layers.BatchNormalization(axis=channelDim))
-        model.add(tf.keras.layers. Dropout(0.5))
-        
-        model.add(tf.keras.layers.Dense(units=classes, activation='softmax'))
-        
-        return model
-        
-        
+        model.add(tf.keras.layers.Dropout(0.5))
 
-import matplotlib
+        model.add(tf.keras.layers.Dense(units=classes, activation='softmax'))
+
+        return model
+
+
 matplotlib.use("Agg")
-train_datagen = ImageDataGenerator(rescale = 1./255,
-                                    shear_range = 0.2,
-                                    zoom_range = 0.2,
-                                    horizontal_flip = True)
+train_datagen = ImageDataGenerator(rescale=1./255,
+                                   shear_range=0.2,
+                                   zoom_range=0.2,
+                                   horizontal_flip=True)
 
 training_set = train_datagen.flow_from_directory('datasets/idc/training',
-                                                    target_size = (64, 64),
-                                                    batch_size = 32,
-                                                    class_mode = 'binary')
+                                                 target_size=(64, 64),
+                                                 batch_size=32,
+                                                 class_mode='binary')
 
 
-from keras.preprocessing.image import ImageDataGenerator 
-from keras.callbacks import LearningRateScheduler 
-from keras.utils import np_utils 
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix 
-from imutils import paths 
-import matplotlib.pyplot as plt 
-import numpy as np 
-import os
+NUM_EPOCHS = 4
+INIT_LR = 1e-2
+BS = 32
 
-NUM_EPOCHS=4; INIT_LR=le-2;Bs=32
+trainPaths = list(paths.list_images(TRAIN_PATH))
+lenTrain = len(trainPaths)
+lenVal = len(list(paths.list_images(VAL_PATH)))
+lenTest = len(list(paths.list_images(TEST_PATH)))
 
-trainPaths=list(paths.list_images(TRAIN_PATH))
-lenTrain=len(trainPaths)
-lenVal=len(list(paths.list_images (VAL_PATH)))
-lenTest=len(list(paths.list_images (TEST_PATH)))
+trainLabels = [int(p.split(os.path.sep)[-2]) for p in trainPaths]
+trainLabels = np_utils.to_categorical(trainLabels)
+classTotals = trainLabels.sum(axis=0)
+classWeight = classTotals.max() / classTotals
 
-trainLabels=[int(p.split(os.path.sep)[-2]) for p in trainPaths]
-trainLabels=np_utils.to_categorical(trainLabels)
-classTotals=trainLabels.sum(axis=0)
-classWeight-classTotals.max()/classTotals
+trainAug = ImageDataGenerator(
+    rescale=1/255.0,
+    rotation_range=20,
+    zoom_range=0.05,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.05,
+    horizontal_flip=True,
+    vertical_flip=True,
+    fill_mode="nearest")
 
-trainAug ImageDataGenerator(
-        rescale=1/255.0,
-        rotation_range=20,
-        zoom_range=0.05,
-         width_shift_range=0.1,
-        height_shift_range=0.1,
-        shear_range=0.05,
-        horizontal flip=True,
-        vertical_flip=True,
-        fill mode="nearest")
-valAug=ImageDataGenerator(rescale=1 / 255.0)
+valAug = ImageDataGenerator(rescale=1/255.0)
 
 trainGen = trainAug.flow_from_directory(
     TRAIN_PATH,
     class_mode='categorical',
-    target_size=(48,48),
+    target_size=(48, 48),
     color_mode="rgb",
     shuffle=True,
     batch_size=BS)
 
-valGen=valAug.flow_from_directory( 
+valGen = valAug.flow_from_directory(
     VAL_PATH,
     class_mode="categorical",
-    get_size=(48,48),
+    target_size=(48, 48),
     color_mode="rgb",
     shuffle=False,
     batch_size=BS)
 
-testGen=valAug.flow_from_directory(
+testGen = valAug.flow_from_directory(
     TEST_PATH,
     class_mode="categorical",
-    target_size=(48,48),
+    target_size=(48, 48),
     color_mode="rgb",
     shuffle=False,
     batch_size=BS)
 
+model = CancerNet.build(width=48, height=48, depth=3, classes=2)
 
-model=cancerNet.build(width=48,height=48,depth=3, classes=2)
-
-model.compile(loss="binary_crossentropy",optimizer='adam',metrics=["accuracy"])
-model.fit(x=trainGen , validation_data=valGen,epochs=3)
+model.compile(loss="binary_crossentropy", optimizer='adam', metrics=["accuracy"])
+model.fit(x=trainGen, validation_data=valGen, epochs=3)
 
 print("Now evaluating the model")
 testGen.reset()
-pred_indices=model.predict_generator(testGen, steps (lenTest//BS)+1)
+pred_indices = model.predict_generator(testGen, steps=(lenTest // BS) + 1)
 
-pred indices np.argmax(pred_indices, axis=1)
+pred_indices = np.argmax(pred_indices, axis=1)
 
-print(classification_report(testGen.classes, pred_indices,target_names=testGen.class_indices.keys()))
-cm= confusion_matrix(testGen.classes, pred_indices)
+print(classification_report(testGen.classes, pred_indices, target_names=testGen.class_indices.keys()))
+cm = confusion_matrix(testGen.classes, pred_indices)
 
-total=sum(sum(cm))
-accuracy=(cm[0,0]+cm[1,1])/total
-specificity=cm[1,1]/(cm[1,0]+cm[1,1])
-sensitivity=cm[0,0]/(cm[0,0]+cm[0,1])
+total = sum(sum(cm))
+accuracy = (cm[0, 0] + cm[1, 1]) / total
+specificity = cm[1, 1] / (cm[1, 0] + cm[1, 1])
+sensitivity = cm[0, 0] / (cm[0, 0] + cm[0, 1])
 print(cm)
 print(f'Accuracy: {accuracy}')
 print(f'Specificity: {specificity}')
 print(f'Sensitivity: {sensitivity}')
 
-N=NUM_EPOCHS
+N = NUM_EPOCHS
 plt.style.use("ggplot")
 plt.figure()
-plt.plot(np.arange(0,N), M.history["loss"], labels="train_loss")
-
-
+plt.plot(np.arange(0, N), model.history.history["loss"], label="train_loss")
+plt.show()
